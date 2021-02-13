@@ -1,0 +1,71 @@
+Hours = {
+  "hour" ~ "s"?
+  | "hr" ~ "s"?
+  | "h"
+}
+
+Minutes = {
+  "minute" ~ "s"?
+  | "min" ~ "s"?
+  | "m"
+}
+
+Seconds = {
+  "second" ~ "s"?
+  | "sec" ~ "s"?
+  | "s"
+}
+
+Duration = {
+  "-"?
+  ~ ASCII_DIGIT*
+  ~ ("." ~ ASCII_DIGIT*)?
+}
+
+DurationExpr = {
+  Duration
+  ~ WHITE_SPACE*
+  ~ (Hours | Minutes | Seconds)
+}
+
+Word = _{
+  ASCII_ALPHA+
+}
+
+Expr = _{
+  WHITE_SPACE*
+  ~ (AtTimeExpr | Word | DurationExpr)
+  ~ WHITE_SPACE*
+}
+
+// At Time
+// ...
+AtHours = {
+  ASCII_DIGIT+
+}
+
+AtMinutes = {
+  ASCII_DIGIT+
+}
+
+TimeValue = _{
+  AtHours
+  ~ ":"?
+  ~ AtMinutes?
+}
+
+Pm = { "PM" | "pm" }
+Am = { "AM" | "am" }
+
+AtTime = {
+  TimeValue
+  ~ (WHITE_SPACE* ~ (Am | Pm))?
+}
+
+AtTimeExpr = _{
+  "at"
+  ~ WHITE_SPACE+
+  ~ AtTime
+}
+
+Input = _{ SOI ~ Expr* ~ EOI }
