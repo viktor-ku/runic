@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate pest_derive;
 
-use pest::{iterators::Pair, Parser};
+use pest::{Parser};
 use wasm_bindgen::prelude::*;
 
 #[derive(Parser)]
@@ -14,15 +14,18 @@ pub struct Runic {
     total: f64,
 }
 
-const SECOND: f64 = 1_000.0;
-const MINUTE: f64 = 60.0 * SECOND;
-const HOUR: f64 = 60.0 * MINUTE;
-const DAY: f64 = 24.0 * HOUR;
-
 mod at;
 use at::At;
 
+mod c;
+use c::{SECOND, MINUTE, HOUR};
+
+mod expr;
+use expr::{at_time_expr, duration_expr};
+
 use chrono::{DateTime, Local, TimeZone};
+
+pub(crate) type PestRule = Rule;
 
 #[wasm_bindgen]
 impl Runic {
@@ -45,41 +48,6 @@ impl Runic {
         format!("{}h {}m {}s", hours, minutes, seconds)
     }
 
-    fn duration_expr(expr: Pair<Rule>) -> f64 {
-        let mut needle = 0.0;
-
-        for prop in expr.into_inner() {
-            match prop.as_rule() {
-                Rule::Duration => {
-                    needle = prop.as_str().parse().unwrap();
-                }
-                Rule::Hours => {
-                    return needle * HOUR;
-                }
-                Rule::Minutes => {
-                    return needle * MINUTE;
-                }
-                Rule::Seconds => {
-                    return needle.trunc() * SECOND;
-                }
-                _ => {}
-            }
-        }
-
-        unreachable!()
-    }
-
-    fn at_time_expr(expr: Pair<Rule>, now: &DateTime<Local>) -> f64 {
-        let at = At::parse(expr);
-        let dt_at = at.datetime(now);
-        let diff = dt_at.timestamp_millis() - now.timestamp_millis();
-        if diff >= 0 {
-            diff as f64
-        } else {
-            DAY + (diff as f64)
-        }
-    }
-
     #[inline]
     #[cfg(not(target_arch = "wasm32"))]
     pub fn describe(input: &str, now_utc_secs: u64) -> Self {
@@ -99,10 +67,10 @@ impl Runic {
                 for expr in parsed {
                     match expr.as_rule() {
                         Rule::AtTime => {
-                            total += Self::at_time_expr(expr, now);
+                            total += at_time_expr(expr, now);
                         }
                         Rule::DurationExpr => {
-                            total += Self::duration_expr(expr);
+                            total += duration_expr(expr);
                         }
                         _ => {}
                     }
