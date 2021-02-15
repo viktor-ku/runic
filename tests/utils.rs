@@ -7,15 +7,7 @@ macro_rules! time {
             .ymd(2021, 1, 1)
             .and_hms($h, $m, $s);
 
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            dt.timestamp() as u64
-        }
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            dt.timestamp_millis() as f64
-        }
+        dt.timestamp() as u64
     }};
 
     ($h:literal:$m:literal) => {
@@ -110,7 +102,7 @@ macro_rules! test {
 #[macro_export]
 macro_rules! duration {
     ($h:literal:$m:literal-$s:literal) => {
-        (($h * 60 * 60 * 1_000) + ($m * 60 * 1_000) + ($s * 1_000)) as f64
+        (($h * 60 * 60) + ($m * 60) + $s) as u64
     };
 
     ($h:literal:$m:literal) => {
