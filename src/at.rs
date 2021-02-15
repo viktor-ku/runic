@@ -1,4 +1,5 @@
 use chrono::{DateTime, Local, Timelike};
+use crate::parser::PestRule as Rule;
 
 #[derive(Debug, PartialEq)]
 pub enum Part {
@@ -7,6 +8,7 @@ pub enum Part {
     Am,
 }
 
+/// `At` represents an _hours_ and _minutes_ pair
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct At(u32, u32);
 
@@ -58,19 +60,19 @@ impl At {
         Self(hours, minutes)
     }
 
-    pub fn parse(expr: pest::iterators::Pair<super::Rule>) -> Self {
+    pub fn parse(expr: pest::iterators::Pair<Rule>) -> Self {
         let mut hours = 0;
         let mut minutes = 0;
         let mut part = Part::None;
 
         for prop in expr.into_inner() {
             match prop.as_rule() {
-                super::Rule::Pm => part = Part::Pm,
-                super::Rule::Am => part = Part::Am,
-                super::Rule::AtHours => {
+                Rule::Pm => part = Part::Pm,
+                Rule::Am => part = Part::Am,
+                Rule::AtHours => {
                     hours = prop.as_str().parse().unwrap();
                 }
-                super::Rule::AtMinutes => {
+                Rule::AtMinutes => {
                     minutes = prop.as_str().parse().unwrap();
                 }
                 _ => {}

@@ -1,18 +1,9 @@
 #[macro_use]
 extern crate pest_derive;
 
-use pest::{Parser};
 use wasm_bindgen::prelude::*;
 
-#[derive(Parser)]
-#[grammar = "grammar.pest"]
-struct InputParser;
-
-#[wasm_bindgen]
-#[derive(Debug, PartialEq)]
-pub struct Runic {
-    total: f64,
-}
+mod parser;
 
 mod at;
 use at::At;
@@ -20,18 +11,26 @@ use at::At;
 mod c;
 use c::{SECOND, MINUTE, HOUR};
 
-mod expr;
-use expr::{at_time_expr, duration_expr};
+mod describe;
+use describe::Describe;
 
-use chrono::{DateTime, Local, TimeZone};
-
-pub(crate) type PestRule = Rule;
+#[wasm_bindgen]
+#[derive(Debug, PartialEq)]
+pub struct Runic {
+    total_secs: u64,
+}
 
 #[wasm_bindgen]
 impl Runic {
     #[inline]
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn total(&self) -> f64 {
-        self.total
+        self.total_secs as f64
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn total(&self) -> f64 {
+        self.total_secs as f64
     }
 
     pub fn translate(ms: f64) -> String {
@@ -48,43 +47,23 @@ impl Runic {
         format!("{}h {}m {}s", hours, minutes, seconds)
     }
 
-    #[inline]
     #[cfg(not(target_arch = "wasm32"))]
     pub fn describe(input: &str, now_utc_secs: u64) -> Self {
-        Self::_describe(input, &Local.timestamp(now_utc_secs as i64, 0))
+        let total = Describe::with(input, now_utc_secs).unwrap_or(0);
+
+        Self { total_secs: total }
     }
 
     #[cfg(target_arch = "wasm32")]
     pub fn describe(input: &str, now_utc_ms: f64) -> Self {
-        Self::_describe(input, &Local.timestamp_millis(now_utc_ms as i64))
-    }
+        if (now_utc_ms.is_sign_negative()) {
+            return Self { total_secs: 0 }
+        }
 
-    fn _describe(input: &str, now: &DateTime<Local>) -> Self {
-        let total = match InputParser::parse(Rule::Input, input) {
-            Ok(parsed) => {
-                let mut total = 0.0;
+        let now_utc_secs = (now_utc_ms / 1000.0) as u64;
 
-                for expr in parsed {
-                    match expr.as_rule() {
-                        Rule::AtTime => {
-                            total += at_time_expr(expr, now);
-                        }
-                        Rule::DurationExpr => {
-                            total += duration_expr(expr);
-                        }
-                        _ => {}
-                    }
-                }
+        let total_secs = Describe::with(input, now_utc_secs).unwrap_or(0);
 
-                if total.is_sign_negative() {
-                    0.0
-                } else {
-                    total
-                }
-            }
-            Err(_) => panic!("something went wrong"),
-        };
-
-        Self { total }
+        Self { total_secs }
     }
 }
