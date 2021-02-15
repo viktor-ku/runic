@@ -1,13 +1,10 @@
-/// Everyone should have consistent results when testing
-pub const UTC_OFFSET: i32 = 3 * 3_600;
-
 #[macro_export]
 macro_rules! time {
     ($h:literal:$m:literal-$s:literal) => {{
-        use chrono::{FixedOffset, TimeZone};
+        use chrono::{Utc, TimeZone};
 
-        let dt = FixedOffset::east(utils::UTC_OFFSET)
-            .ymd(2020, 9, 1)
+        let dt = Utc
+            .ymd(2021, 1, 1)
             .and_hms($h, $m, $s);
 
         #[cfg(not(target_arch = "wasm32"))]
@@ -17,8 +14,6 @@ macro_rules! time {
 
         #[cfg(target_arch = "wasm32")]
         {
-            // Corresponds to js `Date.now()` which returns
-            // number of milliseconds since Unix Epoch.
             dt.timestamp_millis() as f64
         }
     }};
@@ -41,14 +36,28 @@ macro_rules! test {
         describe:$describe:literal
     ) => {
         #[test]
-        #[wasm_bindgen_test]
+        #[cfg(not(target_arch = "wasm32"))]
         fn $name() {
-            let rune = runic::Runic::describe($describe, $now);
-            pretty_assertions::assert_eq!(
-                rune.total(),
-                $total,
-                "rune total should match case total"
-            );
+            use runic::{Runic};
+            use pretty_assertions::assert_eq;
+
+            {
+                println!("UTC0");
+
+                let rune = Runic {
+                    script: $describe,
+                    timestamp: Some($now),
+                    utc_offset: Some(0),
+                };
+
+                let rune = rune.describe();
+
+                assert_eq!(
+                    rune.total(),
+                    $total,
+                    "rune total should match case total"
+                );
+            }
         }
     };
 
