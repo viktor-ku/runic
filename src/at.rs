@@ -1,5 +1,5 @@
-use chrono::{DateTime, Local, Timelike};
 use crate::parser::PestRule as Rule;
+use chrono::{DateTime, Local, Timelike};
 
 #[derive(Debug, PartialEq)]
 pub enum Part {

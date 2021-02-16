@@ -1,17 +1,14 @@
-use pest::{iterators::Pair, Parser};
-use chrono::{DateTime, Local, TimeZone};
-use crate::c::{SECOND, MINUTE_F64, HOUR_F64, DAY};
 use crate::at::At;
+use crate::c::{DAY, HOUR_F64, MINUTE_F64, SECOND};
 use crate::parser::{InputParser, PestRule as Rule};
+use chrono::{DateTime, Local, TimeZone};
+use pest::{iterators::Pair, Parser};
 use std::result::Result;
 
 pub struct Describe;
 
 impl Describe {
-    pub fn with(input: &str, utc_timestamp_secs: u64) -> Result<u64, ()> {
-        let local_dt = Local.timestamp(utc_timestamp_secs as i64, 0);
-        let utc_offset_secs = local_dt.offset().local_minus_utc();
-
+    pub fn with(input: &str, timestamp: i64, offset: i32) -> Result<u64, ()> {
         let total: u64 = match InputParser::parse(Rule::Input, input) {
             Ok(parsed) => {
                 let mut total: i64 = 0;

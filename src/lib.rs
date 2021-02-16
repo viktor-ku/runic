@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate pest_derive;
 
-mod parser;
 mod at;
 mod c;
 mod describe;
+mod parser;
 
 mod runic;
 pub use runic::Runic;

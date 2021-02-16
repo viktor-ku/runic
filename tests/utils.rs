@@ -36,11 +36,9 @@ macro_rules! test {
             {
                 println!("UTC0");
 
-                let rune = Runic {
-                    script: $describe,
-                    timestamp: Some($now),
-                    utc_offset: Some(0),
-                };
+                let rune = Runic::new($describe)
+                    .timestamp($now)
+                    .offset(0);
 
                 let rune = rune.describe();
 
