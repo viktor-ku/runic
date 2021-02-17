@@ -1,5 +1,5 @@
 use crate::parser::PestRule as Rule;
-use chrono::{DateTime, Local, Timelike};
+use chrono::{DateTime, Local, TimeZone, Timelike};
 use pest::iterators::Pair;
 
 #[derive(Debug, PartialEq)]
@@ -11,19 +11,9 @@ pub enum Part {
 
 /// `At` represents an _hours_ and _minutes_ pair
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct At(u32, u32);
+pub struct At(pub u32, pub u32);
 
 impl At {
-    pub fn datetime(&self, base: &DateTime<Local>) -> DateTime<Local> {
-        let mut dt = *base;
-
-        dt = dt.with_hour(self.0).unwrap();
-        dt = dt.with_minute(self.1).unwrap();
-        dt = dt.with_second(0).unwrap();
-
-        dt
-    }
-
     /// Converts combination of `hours` - `minutes` - `Am/Pm/None` to
     /// 24h format time in a form of `hours` - `minutes`.
     fn format(hours: u32, minutes: u32, part: &Part) -> Self {

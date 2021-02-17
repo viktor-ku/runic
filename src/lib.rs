@@ -7,7 +7,7 @@ mod describe;
 mod parser;
 
 mod runic;
-pub use runic::Runic;
+pub use crate::runic::Runic;
 
 mod open_runic;
 pub use open_runic::OpenRunic;
