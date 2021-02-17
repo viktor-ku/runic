@@ -1,10 +1,7 @@
 use crate::at::At;
-use crate::c::{DAY, HOUR_F64, MINUTE_F64, SECOND};
+use crate::c::{DAY, HOUR_F64, MINUTE_F64};
 use crate::parser::{InputParser, PestRule as Rule};
-use chrono::{
-    DateTime, Datelike, FixedOffset, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone,
-    Timelike, Utc,
-};
+use chrono::{FixedOffset, TimeZone, Timelike};
 use pest::{iterators::Pair, Parser};
 use std::result::Result;
 

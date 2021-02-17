@@ -1,6 +1,6 @@
 use crate::describe::Describe;
 use crate::OpenRunic;
-use chrono::{FixedOffset, Local, TimeZone, Utc};
+use chrono::{Local, TimeZone, Utc};
 
 /// When constructing `Runic`, one can use only specific fields and fill
 /// all the others with `None` (in which case they will be computed during `describe`
