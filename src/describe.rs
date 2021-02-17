@@ -8,7 +8,6 @@ use std::result::Result;
 pub struct Describe {
     utc: i64,
     offset: i32,
-    local: i64,
 }
 
 impl Describe {
@@ -16,7 +15,6 @@ impl Describe {
         let cx = Self {
             utc: timestamp,
             offset,
-            local: timestamp + (offset as i64),
         };
 
         let mut at: Option<At> = None;
@@ -68,7 +66,7 @@ impl Describe {
             dt.timestamp()
         };
 
-        let diff = at - self.local;
+        let diff = at - self.utc;
 
         if diff.is_negative() {
             DAY + diff
