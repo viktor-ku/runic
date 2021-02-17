@@ -1,5 +1,6 @@
 use crate::parser::PestRule as Rule;
 use chrono::{DateTime, Local, Timelike};
+use pest::iterators::Pair;
 
 #[derive(Debug, PartialEq)]
 pub enum Part {
@@ -60,7 +61,7 @@ impl At {
         Self(hours, minutes)
     }
 
-    pub fn parse(expr: pest::iterators::Pair<Rule>) -> Self {
+    pub fn parse(expr: Pair<Rule>) -> Self {
         let mut hours = 0;
         let mut minutes = 0;
         let mut part = Part::None;

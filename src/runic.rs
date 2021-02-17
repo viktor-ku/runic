@@ -57,11 +57,9 @@ impl<'runic> Runic<'runic> {
         let timestamp = self.timestamp.unwrap_or_else(|| Self::compute_timestamp());
         let offset = self
             .offset
-            .unwrap_or_else(|| Self::compute_offset(timestamp));
+            .unwrap_or_else(|| Self::compute_offset(timestamp)) as i64;
 
-        let total = Describe::with(self.script, timestamp, offset).unwrap_or(0);
-
-        OpenRunic::new(total)
+        OpenRunic::new(Describe::with(self.script, timestamp, offset).unwrap_or(0))
     }
 
     #[inline]

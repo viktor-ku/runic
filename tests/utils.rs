@@ -5,7 +5,7 @@ macro_rules! time {
 
         let dt = Utc.ymd(2021, 1, 1).and_hms($h, $m, $s);
 
-        dt.timestamp() as u64
+        dt.timestamp()
     }};
 
     ($h:literal:$m:literal) => {
@@ -34,8 +34,9 @@ macro_rules! test {
             {
                 println!("UTC0");
 
-                let rune = Runic::new($describe)
-                    .timestamp($now)
+                let mut rune = Runic::new($describe);
+
+                rune.timestamp($now)
                     .offset(0);
 
                 let rune = rune.describe();

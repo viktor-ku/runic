@@ -5,36 +5,41 @@ use chrono::{DateTime, Local, TimeZone};
 use pest::{iterators::Pair, Parser};
 use std::result::Result;
 
-pub struct Describe;
+pub struct Describe {
+    timestamp: i64,
+    offset: i64,
+    local: i64,
+}
 
 impl Describe {
-    pub fn with(input: &str, timestamp: i64, offset: i32) -> Result<u64, ()> {
-        let total: u64 = match InputParser::parse(Rule::Input, input) {
-            Ok(parsed) => {
-                let mut total: i64 = 0;
+    pub fn with(input: &str, timestamp: i64, offset: i64) -> Result<u64, ()> {
+        let cx = Self {
+            timestamp,
+            offset,
+            local: timestamp + offset,
+        };
 
+        let mut at: Option<At> = None;
+        let mut duration_total = 0;
+
+        match InputParser::parse(Rule::Input, input) {
+            Ok(parsed) => {
                 for expr in parsed {
                     match expr.as_rule() {
                         Rule::AtTime => {
-                            total += Describe::at_time_expr(expr, &local_dt);
+                            at = Some(At::parse(expr));
                         }
                         Rule::DurationExpr => {
-                            total += Describe::duration_expr(expr);
+                            duration_total += Self::duration_expr(expr);
                         }
                         _ => {}
                     }
-                }
-
-                if total.is_negative() {
-                    0
-                } else {
-                    total as _
                 }
             }
             Err(_) => return Err(()),
         };
 
-        Ok(total)
+        Ok(0)
     }
 
     fn duration_expr(expr: Pair<Rule>) -> i64 {
@@ -59,18 +64,5 @@ impl Describe {
         }
 
         unreachable!()
-    }
-
-    fn at_time_expr(expr: Pair<Rule>, now: &DateTime<Local>) -> i64 {
-        let at = At::parse(expr);
-        let dt_at = at.datetime(now);
-
-        let diff = dt_at.timestamp_millis() - now.timestamp_millis();
-
-        if diff >= 0 {
-            diff
-        } else {
-            DAY + diff
-        }
     }
 }
