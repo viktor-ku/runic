@@ -2,25 +2,32 @@ use crate::describe::Describe;
 use crate::OpenRunic;
 use chrono::{Local, TimeZone, Utc};
 
+/// When constructing `Runic`, one can use only specific fields and fill
+/// all the others with `None` (in which case they will be computed during `describe`
+/// function execution). Note, you can also use builder-like functions or `Default` is also
+/// implemented to help you out. This also makes it easier to reuse the same _Runic_ multiple
+/// times slightly adjusting on of the fields.
+#[derive(Debug)]
 pub struct Runic<'runic> {
     /// The string you want to describe.
     pub script: &'runic str,
 
     /// Set the timestamp based on which the total duration should
     /// be computed. It expects the number of seconds since Unix epoch minus
-    /// leap seconds. Note, that it also accepts negative number.
+    /// leap seconds. Note, that it also accepts negative numbers.
     ///
-    /// Takes _now_ at the moment of `describe` execution If set to `None`.
-    pub timestamp: i64,
+    /// Takes _now_ at the moment of the `describe` execution If set to `None`.
+    pub timestamp: Option<i64>,
 
     /// Set the utc offset manually. It expects the number of seconds.
     ///
     /// It is not recommended however, because internally
-    /// offset will be calculated based on the local time if set to `None`.
+    /// offset will be calculated based on the local time if set to `None` during
+    /// the `describe` execution.
     ///
     /// Of course, it might be actually useful in cases where offset is known
     /// in advance.
-    pub offset: i32,
+    pub offset: Option<i32>,
 }
 
 impl<'runic> Runic<'runic> {
@@ -29,25 +36,30 @@ impl<'runic> Runic<'runic> {
 
         Self {
             script,
-            timestamp,
-            offset: Self::compute_offset(timestamp),
+            timestamp: Some(timestamp),
+            offset: Some(Self::compute_offset(timestamp)),
         }
     }
 
     #[inline]
     pub fn timestamp(&mut self, timestamp: i64) -> &mut Self {
-        self.timestamp = timestamp;
+        self.timestamp = Some(timestamp);
         self
     }
 
     #[inline]
     pub fn offset(&mut self, offset: i32) -> &mut Self {
-        self.offset = offset;
+        self.offset = Some(offset);
         self
     }
 
     pub fn describe(&self) -> OpenRunic {
-        let total = Describe::with(self.script, self.timestamp, self.offset).unwrap_or(0);
+        let timestamp = self.timestamp.unwrap_or_else(|| Self::compute_timestamp());
+        let offset = self
+            .offset
+            .unwrap_or_else(|| Self::compute_offset(timestamp));
+
+        let total = Describe::with(self.script, timestamp, offset).unwrap_or(0);
 
         OpenRunic::new(total)
     }
@@ -60,5 +72,15 @@ impl<'runic> Runic<'runic> {
     #[inline]
     fn compute_offset(base: i64) -> i32 {
         Local.timestamp(base, 0).offset().local_minus_utc()
+    }
+}
+
+impl Default for Runic<'_> {
+    fn default() -> Self {
+        Self {
+            script: "",
+            timestamp: None,
+            offset: None,
+        }
     }
 }

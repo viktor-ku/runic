@@ -1,11 +1,9 @@
 #[macro_export]
 macro_rules! time {
     ($h:literal:$m:literal-$s:literal) => {{
-        use chrono::{Utc, TimeZone};
+        use chrono::{TimeZone, Utc};
 
-        let dt = Utc
-            .ymd(2021, 1, 1)
-            .and_hms($h, $m, $s);
+        let dt = Utc.ymd(2021, 1, 1).and_hms($h, $m, $s);
 
         dt.timestamp() as u64
     }};
