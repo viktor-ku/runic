@@ -1,12 +1,19 @@
 {
   "name": "runic",
   "version": "0.1.0",
-  "description": "> Stupid string to duration converter",
+  "description": "Stupid string to duration converter",
   "module": "js/build/index.js",
   "types": "js/build/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepack": "make wasm/build"
   },
+  "files": [
+    "package.json",
+    "package-lock.json",
+    "README.md",
+    "js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/viktor-ku/runic.git"
