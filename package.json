@@ -1,0 +1,21 @@
+{
+  "name": "runic",
+  "version": "0.1.0",
+  "description": "> Stupid string to duration converter",
+  "module": "js/build/index.js",
+  "types": "js/build/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viktor-ku/runic.git"
+  },
+  "bugs": {
+    "url": "https://github.com/viktor-ku/runic/issues"
+  },
+  "homepage": "https://github.com/viktor-ku/runic#readme",
+  "devDependencies": {
+    "typescript": "4.1"
+  }
+}

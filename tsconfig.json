@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "outDir": "js/build",
+    "module": "ESNext",
+    "target": "ES2017",
+    "moduleResolution": "Node",
+    "strict": true,
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationDir": "js/build"
+  },
+  "files": [
+    "js/src/index.ts"
+  ]
+}

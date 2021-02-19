@@ -13,6 +13,10 @@ pc/test:
 
 wasm/build:
 	wasm-pack build
+	mkdir -p js/wasm
+	mv pkg/runic* js/wasm
+	rm -rf pkg
+	npm run build
 
 wasm/test:
 	wasm-pack test --firefox --headless
