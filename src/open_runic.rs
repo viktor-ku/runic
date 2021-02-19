@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-#[derive(PartialEq)]
+#[derive(Debug, Clone, Copy, PartialOrd, PartialEq)]
 pub struct OpenRunic {
     /// Total number of seconds computed from the runic
     total: u64,
@@ -10,9 +10,8 @@ pub struct OpenRunic {
 #[wasm_bindgen]
 impl OpenRunic {
     #[inline]
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn total(&self) -> u64 {
-        self.total
+    pub(crate) fn new(total: u64) -> Self {
+        Self { total }
     }
 
     #[inline]
@@ -22,7 +21,8 @@ impl OpenRunic {
     }
 
     #[inline]
-    pub(crate) fn new(total: u64) -> Self {
-        Self { total }
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn total(&self) -> u64 {
+        self.total
     }
 }

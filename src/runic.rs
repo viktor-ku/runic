@@ -1,6 +1,8 @@
 use crate::describe::Describe;
 use crate::OpenRunic;
 use chrono::{Local, TimeZone, Utc};
+
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
 /// When constructing `Runic`, one can use only specific fields and fill

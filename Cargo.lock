@@ -279,6 +279,7 @@ name = "runic"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "js-sys",
  "pest",
  "pest_derive",
  "pretty_assertions",
