@@ -1,4 +1,5 @@
 use chrono::{DateTime, FixedOffset, NaiveDate};
+use wasm_bindgen_test::*;
 
 pub(crate) fn compute_timestamp(
     year: i32,
@@ -45,9 +46,9 @@ macro_rules! time {
 
 #[macro_export]
 macro_rules! duration {
-    ($h:literal:$m:literal-$s:literal) => {
+    ($h:literal:$m:literal-$s:literal) => {{
         (($h * 60 * 60) + ($m * 60) + $s) as u64
-    };
+    }};
 
     ($h:literal:$m:literal) => {
         crate::duration! {$h:$m-00}
@@ -67,23 +68,39 @@ macro_rules! test {
         describe:$describe:literal,
         offset:$offset:expr
     ) => {
+        use wasm_bindgen_test::*;
+
         #[test]
-        #[cfg(not(target_arch = "wasm32"))]
+        #[wasm_bindgen_test]
         fn $name() {
-            use runic::{Runic};
-            use pretty_assertions::assert_eq;
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let runic = runic::Runic {
+                    script: $describe,
+                    timestamp: Some($now),
+                    offset: Some($offset),
+                };
 
-            let runic = Runic {
-                script: $describe,
-                timestamp: Some($now),
-                offset: Some($offset),
-            };
+                pretty_assertions::assert_eq!(
+                    runic.describe().total(),
+                    $total,
+                    "rune total should match case total"
+                );
+            }
 
-            assert_eq!(
-                runic.describe().total(),
-                $total,
-                "rune total should match case total"
-            );
+            #[cfg(target_arch = "wasm32")]
+            {
+                let mut runic = runic::Runic::new($describe);
+
+                runic.timestamp($now as _);
+                runic.offset($offset);
+
+                pretty_assertions::assert_eq!(
+                    runic.describe().total(),
+                    $total as f64,
+                    "rune total should match case total"
+                );
+            }
         }
     };
 

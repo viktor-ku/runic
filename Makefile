@@ -1,14 +1,18 @@
-all: test-all
+all: build
 
-test:
+test: pc/test wasm/test
+t: test
+
+build: pc/build wasm/build
+
+pc/build:
+	cargo build --release
+
+pc/test:
 	cargo t -- --nocapture
-	wasm-pack test --firefox --headless
 
-test/web:
-	wasm-pack test --firefox --headless
-
-build:
-	cargo build
+wasm/build:
 	wasm-pack build
 
-test-all: build test
+wasm/test:
+	wasm-pack test --firefox --headless
