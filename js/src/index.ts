@@ -2,7 +2,11 @@ import {hms as _hms, Runic as _Runic} from '../wasm/runic.js'
 
 export type Hms = [number, number, number]
 
-export const hms = (seconds: number): Hms => _hms(seconds) as Hms
+interface HmsFn {
+  (seconds: number): Hms
+}
+
+export const hms = _hms as HmsFn
 
 export class OpenRunic {
   constructor(
