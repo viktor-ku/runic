@@ -1,5 +1,4 @@
 use chrono::{DateTime, FixedOffset, NaiveDate};
-use wasm_bindgen_test::*;
 
 pub(crate) fn compute_timestamp(
     year: i32,
