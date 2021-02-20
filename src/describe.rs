@@ -17,7 +17,7 @@ impl Describe {
             offset,
         };
 
-        let mut at: Option<At> = None;
+        let mut at: Option<Pair<Rule>> = None;
         let mut duration_total = 0;
 
         match InputParser::parse(Rule::Input, input) {
@@ -25,7 +25,7 @@ impl Describe {
                 for expr in parsed {
                     match expr.as_rule() {
                         Rule::AtTime => {
-                            at = Some(At::parse(expr));
+                            at = Some(expr);
                         }
                         Rule::DurationExpr => {
                             duration_total += Self::duration_expr(expr);
@@ -38,7 +38,7 @@ impl Describe {
         };
 
         let at_total = match at {
-            Some(at) => cx.duration_until(&at),
+            Some(at) => cx.duration_until(&At::parse(at)),
             None => 0,
         };
 
@@ -50,9 +50,9 @@ impl Describe {
             } else {
                 total
             }
-        } as _;
+        };
 
-        Ok(total)
+        Ok(total as _)
     }
 
     fn duration_until(&self, at: &At) -> i64 {
