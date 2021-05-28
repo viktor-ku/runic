@@ -3,6 +3,21 @@ name = "runic"
 version = "0.1.0"
 authors = ["Viktor Kuroljov <viktor@ku.family>"]
 edition = "2018"
+readme = "README.md"
+repository = "https://github.com/viktor-ku/runic"
+homepage = "https://github.com/viktor-ku/runic"
+description = "Stupid string to duration converter"
+keywords = [
+    "time",
+    "string",
+    "format",
+    "convert"
+]
+categories = [
+    "parser-implementations",
+    "parsing",
+    "wasm"
+]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

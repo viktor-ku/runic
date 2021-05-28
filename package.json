@@ -18,6 +18,12 @@
     "type": "git",
     "url": "git+https://github.com/viktor-ku/runic.git"
   },
+  "keywords": [
+    "time",
+    "string",
+    "format",
+    "convert"
+  ],
   "bugs": {
     "url": "https://github.com/viktor-ku/runic/issues"
   },
