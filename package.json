@@ -1,6 +1,6 @@
 {
   "name": "runicjs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Stupid string to duration converter",
   "module": "js/build/index.js",
   "types": "js/build/index.d.ts",
