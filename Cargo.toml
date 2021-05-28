@@ -18,6 +18,7 @@ categories = [
     "parsing",
     "wasm"
 ]
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

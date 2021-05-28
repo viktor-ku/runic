@@ -18,6 +18,7 @@
     "type": "git",
     "url": "git+https://github.com/viktor-ku/runic.git"
   },
+  "license": "MIT",
   "keywords": [
     "time",
     "string",
