@@ -5,3 +5,4 @@ pkg
 js/build
 js/wasm
 *.tgz
+todo.md
