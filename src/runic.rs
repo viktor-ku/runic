@@ -68,13 +68,3 @@ impl<'runic> Runic<'runic> {
         Local.timestamp(base, 0).offset().local_minus_utc()
     }
 }
-
-impl Default for Runic<'_> {
-    fn default() -> Self {
-        Self {
-            script: "",
-            timestamp: None,
-            offset: None,
-        }
-    }
-}
