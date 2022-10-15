@@ -1,5 +1,5 @@
-use crate::at::At;
 use crate::at;
+use crate::at::At;
 use crate::c::{DAY, HOUR_F64, MINUTE_F64};
 use crate::parser::{InputParser, PestRule as Rule};
 use chrono::{FixedOffset, TimeZone, Timelike};
@@ -12,7 +12,7 @@ pub struct Describe {
 }
 
 impl Describe {
-    pub fn with(input: &str, timestamp: i64, offset: i32) -> Result<u64, ()> {
+    pub fn with(script: &str, timestamp: i64, offset: i32) -> Result<u64, ()> {
         let cx = Self {
             utc: timestamp,
             offset,
@@ -21,7 +21,7 @@ impl Describe {
         let mut at: Option<Pair<Rule>> = None;
         let mut duration_total = 0;
 
-        match InputParser::parse(Rule::Input, input) {
+        match InputParser::parse(Rule::Input, script) {
             Ok(parsed) => {
                 for expr in parsed {
                     match expr.as_rule() {
@@ -29,7 +29,7 @@ impl Describe {
                             at = Some(expr);
                         }
                         Rule::DurationExpr => {
-                            duration_total += Self::duration_expr(expr);
+                            duration_total += Self::compute_duration_from_timeout_expr(expr);
                         }
                         _ => {}
                     }
@@ -39,7 +39,7 @@ impl Describe {
         };
 
         let at_total = match at {
-            Some(at) => cx.duration_until(&At::parse(at)),
+            Some(expr) => cx.compute_duration_from_target_expr(expr),
             None => 0,
         };
 
@@ -56,32 +56,34 @@ impl Describe {
         Ok(total as _)
     }
 
-    fn duration_until(&self, at: &At) -> i64 {
-        let at = {
+    fn compute_duration_from_target_expr(&self, expr: Pair<Rule>) -> i64 {
+        let at = At::parse(expr);
+
+        let target = {
             let offset = match at.script_timezone {
                 at::ScriptTimezone::Mirror => FixedOffset::east(self.offset),
                 at::ScriptTimezone::Custom(script_offset) => FixedOffset::east(script_offset),
             };
 
-            let dt = offset.timestamp(self.utc, 0);
-            let dt = dt.with_hour(at.hours).unwrap();
-            let dt = dt.with_minute(at.minutes).unwrap();
-            let dt = dt.with_second(0).unwrap();
-            let dt = dt.with_nanosecond(0).unwrap();
+            let target = offset.timestamp(self.utc, 0);
+            let target = target.with_hour(at.hours).unwrap();
+            let target = target.with_minute(at.minutes).unwrap();
+            let target = target.with_second(0).unwrap();
+            let target = target.with_nanosecond(0).unwrap();
 
-            dt.timestamp()
+            target.timestamp()
         };
 
-        let diff = at - self.utc;
+        let duration = target - self.utc;
 
-        if diff.is_negative() {
-            DAY + diff
+        if duration.is_negative() {
+            DAY + duration
         } else {
-            diff
+            duration
         }
     }
 
-    fn duration_expr(expr: Pair<Rule>) -> i64 {
+    fn compute_duration_from_timeout_expr(expr: Pair<Rule>) -> i64 {
         let mut needle: f64 = 0.0;
 
         for prop in expr.into_inner() {
