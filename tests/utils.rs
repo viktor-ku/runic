@@ -76,7 +76,7 @@ macro_rules! test {
             };
 
             pretty_assertions::assert_eq!(
-                runic.describe().total(),
+                runic.describe(),
                 $total,
                 "rune total should match case total"
             );

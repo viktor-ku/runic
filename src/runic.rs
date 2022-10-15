@@ -1,5 +1,4 @@
 use crate::describe::Describe;
-use crate::OpenRunic;
 use chrono::{Local, TimeZone, Utc};
 
 /// When constructing `Runic`, one can use only specific fields and fill
@@ -51,19 +50,21 @@ impl<'runic> Runic<'runic> {
         self
     }
 
-    pub fn describe(&self) -> OpenRunic {
+    pub fn describe(&self) -> u64 {
         let timestamp = self.timestamp.unwrap_or_else(|| Self::compute_timestamp());
         let offset = self
             .offset
             .unwrap_or_else(|| Self::compute_offset(timestamp));
 
-        OpenRunic::new(Describe::with(self.script, timestamp, offset).unwrap_or(0))
+        Describe::with(self.script, timestamp, offset).unwrap_or(0)
     }
 
+    #[inline]
     fn compute_timestamp() -> i64 {
         Utc::now().timestamp()
     }
 
+    #[inline]
     fn compute_offset(base: i64) -> i32 {
         Local.timestamp(base, 0).offset().local_minus_utc()
     }
