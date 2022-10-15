@@ -8,14 +8,34 @@ pub enum Part {
     Am,
 }
 
-/// `At` represents an _hours_ and _minutes_ pair
+/// `ScriptTimezone` is not to be confused with
+/// current time state; it really is an offset defined
+/// by the user's input (script) and is set to either mirror the
+/// user's choosen timezone by default or set a custom one.
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct At(pub u32, pub u32);
+pub enum ScriptTimezone {
+    /// Assume the user wants to infer the script's timezone
+    /// to be the same as their choosen timezone.
+    Mirror,
+
+    /// Set custom script timezone and recalculate
+    /// any durations with this offset in mind.
+    ///
+    /// In seconds.
+    Custom(i32),
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub struct At {
+    pub hours: u32,
+    pub minutes: u32,
+    pub script_timezone: ScriptTimezone,
+}
 
 impl At {
     /// Converts combination of `hours` - `minutes` - `Am/Pm/None` to
     /// 24h format time in a form of `hours` - `minutes`.
-    fn format(hours: u32, minutes: u32, part: &Part) -> Self {
+    fn convert24h(hours: u32, minutes: u32, part: &Part) -> (u32, u32) {
         let mut hours = hours;
 
         match part {
@@ -47,34 +67,55 @@ impl At {
             hours = 0;
         }
 
-        Self(hours, minutes)
+        (hours, minutes)
     }
 
     pub fn parse(expr: Pair<Rule>) -> Self {
         let mut hours = 0;
         let mut minutes = 0;
         let mut part = Part::None;
+        let mut script_timezone = ScriptTimezone::Mirror;
 
         for prop in expr.into_inner() {
             match prop.as_rule() {
                 Rule::Pm => part = Part::Pm,
                 Rule::Am => part = Part::Am,
                 Rule::AtHours => {
-                    hours = prop.as_str().parse().unwrap();
+                    hours = prop
+                        .as_str()
+                        .parse()
+                        .expect("could not parse {at hours} in script");
                 }
                 Rule::AtMinutes => {
-                    minutes = prop.as_str().parse().unwrap();
+                    minutes = prop
+                        .as_str()
+                        .parse()
+                        .expect("could not parse {at minutes} in script");
+                }
+                Rule::Timezone => {
+                    script_timezone = ScriptTimezone::Custom(
+                        prop.as_str()
+                            .parse::<i32>()
+                            .expect("could not parse the timezone in script")
+                            * 3600,
+                    );
                 }
                 _ => {}
             }
         }
 
-        Self::format(hours, minutes, &part)
+        let (hours, minutes) = Self::convert24h(hours, minutes, &part);
+
+        Self {
+            hours,
+            minutes,
+            script_timezone,
+        }
     }
 }
 
 #[cfg(test)]
-mod format {
+mod convert24h {
     use super::{At, Part};
 
     macro_rules! test {
@@ -87,8 +128,8 @@ mod format {
             #[test]
             fn $name() {
                 pretty_assertions::assert_eq!(
-                    At::format($actual_h, $actual_m, &Part::$part),
-                    At($expected_h, $expected_m),
+                    At::convert24h($actual_h, $actual_m, &Part::$part),
+                    ($expected_h, $expected_m),
                 );
             }
         };

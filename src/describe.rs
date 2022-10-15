@@ -1,4 +1,5 @@
 use crate::at::At;
+use crate::at;
 use crate::c::{DAY, HOUR_F64, MINUTE_F64};
 use crate::parser::{InputParser, PestRule as Rule};
 use chrono::{FixedOffset, TimeZone, Timelike};
@@ -57,12 +58,17 @@ impl Describe {
 
     fn duration_until(&self, at: &At) -> i64 {
         let at = {
-            let offset = FixedOffset::east(self.offset);
+            let offset = match at.script_timezone {
+                at::ScriptTimezone::Mirror => FixedOffset::east(self.offset),
+                at::ScriptTimezone::Custom(script_offset) => FixedOffset::east(script_offset),
+            };
+
             let dt = offset.timestamp(self.utc, 0);
-            let dt = dt.with_hour(at.0).unwrap();
-            let dt = dt.with_minute(at.1).unwrap();
+            let dt = dt.with_hour(at.hours).unwrap();
+            let dt = dt.with_minute(at.minutes).unwrap();
             let dt = dt.with_second(0).unwrap();
             let dt = dt.with_nanosecond(0).unwrap();
+
             dt.timestamp()
         };
 

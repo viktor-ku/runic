@@ -57,9 +57,15 @@ TimeValue = _{
 Pm = { "PM" | "pm" }
 Am = { "AM" | "am" }
 
+Timezone = {
+  "+"
+  ~ ASCII_DIGIT+
+}
+
 AtTime = {
   TimeValue
   ~ (WHITE_SPACE* ~ (Am | Pm))?
+  ~ (WHITE_SPACE* ~ Timezone)?
 }
 
 AtTimeExpr = _{

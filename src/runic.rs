@@ -41,13 +41,11 @@ impl<'runic> Runic<'runic> {
         }
     }
 
-    #[inline]
     pub fn timestamp(&mut self, timestamp: i64) -> &mut Self {
         self.timestamp = Some(timestamp);
         self
     }
 
-    #[inline]
     pub fn offset(&mut self, offset: i32) -> &mut Self {
         self.offset = Some(offset);
         self
@@ -62,12 +60,10 @@ impl<'runic> Runic<'runic> {
         OpenRunic::new(Describe::with(self.script, timestamp, offset).unwrap_or(0))
     }
 
-    #[inline]
     fn compute_timestamp() -> i64 {
         Utc::now().timestamp()
     }
 
-    #[inline]
     fn compute_offset(base: i64) -> i32 {
         Local.timestamp(base, 0).offset().local_minus_utc()
     }
