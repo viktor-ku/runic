@@ -1,7 +1,5 @@
 mod utils;
 
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
 mod sub {
     use super::*;
 

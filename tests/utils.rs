@@ -67,39 +67,20 @@ macro_rules! test {
         describe:$describe:literal,
         offset:$offset:expr
     ) => {
-        use wasm_bindgen_test::*;
-
         #[test]
-        #[wasm_bindgen_test]
         fn $name() {
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                let runic = runic::Runic {
-                    script: $describe,
-                    timestamp: Some($now),
-                    offset: Some($offset),
-                };
+            let runic = runic::Runic {
+                script: $describe,
+                timestamp: Some($now),
+                offset: Some($offset),
+            };
 
-                pretty_assertions::assert_eq!(
-                    runic.describe().total(),
-                    $total,
-                    "rune total should match case total"
-                );
-            }
+            pretty_assertions::assert_eq!(
+                runic.describe().total(),
+                $total,
+                "rune total should match case total"
+            );
 
-            #[cfg(target_arch = "wasm32")]
-            {
-                let mut runic = runic::Runic::new($describe);
-
-                runic.timestamp($now as _);
-                runic.offset($offset);
-
-                pretty_assertions::assert_eq!(
-                    runic.describe().total(),
-                    $total as f64,
-                    "rune total should match case total"
-                );
-            }
         }
     };
 
