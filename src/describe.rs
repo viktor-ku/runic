@@ -1,7 +1,7 @@
-use crate::at;
 use crate::at::At;
 use crate::c::{DAY, HOUR_F64, MINUTE_F64};
 use crate::parser::{InputParser, PestRule as Rule};
+use crate::script_timezone::ScriptTimezone;
 use chrono::{FixedOffset, TimeZone, Timelike};
 use pest::{iterators::Pair, Parser};
 use std::result::Result;
@@ -61,8 +61,8 @@ impl Describe {
 
         let target = {
             let offset = match at.script_timezone {
-                at::ScriptTimezone::Mirror => FixedOffset::east(self.offset),
-                at::ScriptTimezone::Custom(script_offset) => FixedOffset::east(script_offset),
+                ScriptTimezone::Mirror => FixedOffset::east(self.offset),
+                ScriptTimezone::Custom(script_offset) => FixedOffset::east(script_offset),
             };
 
             let target = offset.timestamp(self.utc, 0);

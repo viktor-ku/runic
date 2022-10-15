@@ -1,3 +1,21 @@
+// Input
+// ...
+
+Input = _{ SOI ~ Expr* ~ EOI }
+
+Word = _{
+  ASCII_ALPHA+
+}
+
+Expr = _{
+  WHITE_SPACE*
+  ~ (AtTimeExpr | Word | DurationExpr)
+  ~ WHITE_SPACE*
+}
+
+// Duration
+// ...
+
 Hours = {
   "hour" ~ "s"?
   | "hr" ~ "s"?
@@ -28,18 +46,9 @@ DurationExpr = {
   ~ (Hours | Minutes | Seconds)
 }
 
-Word = _{
-  ASCII_ALPHA+
-}
-
-Expr = _{
-  WHITE_SPACE*
-  ~ (AtTimeExpr | Word | DurationExpr)
-  ~ WHITE_SPACE*
-}
-
 // At Time
 // ...
+
 AtHours = {
   ASCII_DIGIT+
 }
@@ -57,11 +66,6 @@ TimeValue = _{
 Pm = { "PM" | "pm" }
 Am = { "AM" | "am" }
 
-Timezone = {
-  "+"
-  ~ ASCII_DIGIT+
-}
-
 AtTime = {
   TimeValue
   ~ (WHITE_SPACE* ~ (Am | Pm))?
@@ -74,4 +78,35 @@ AtTimeExpr = _{
   ~ AtTime
 }
 
-Input = _{ SOI ~ Expr* ~ EOI }
+// Timezone
+// ...
+
+TimezoneHoursSimple = {
+  ASCII_DIGIT{1,2}
+}
+
+TimezoneHours = {
+  ASCII_DIGIT{2}
+}
+
+TimezoneMinutes = {
+  ASCII_DIGIT{2}
+}
+
+TimezonePositive = { "+" }
+TimezoneNegative = { "-" }
+
+TimezoneLiteral = {
+  ("UTC" | "utc" | "Utc")?
+
+  ~ (TimezonePositive | TimezoneNegative)
+
+  ~ (
+    (TimezoneHoursSimple ~ (":" ~ TimezoneMinutes)?)
+    | (TimezoneHours ~ TimezoneMinutes)
+  )
+}
+
+Timezone = {
+  TimezoneLiteral
+}

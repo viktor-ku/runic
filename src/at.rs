@@ -1,4 +1,5 @@
 use crate::parser::PestRule as Rule;
+use crate::script_timezone::{ScriptTimezone, ScriptTimezoneParser};
 use pest::iterators::Pair;
 
 #[derive(Debug, PartialEq)]
@@ -6,23 +7,6 @@ pub enum Part {
     None,
     Pm,
     Am,
-}
-
-/// `ScriptTimezone` is not to be confused with
-/// current time state; it really is an offset defined
-/// by the user's input (script) and is set to either mirror the
-/// user's choosen timezone by default or set a custom one.
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum ScriptTimezone {
-    /// Assume the user wants to infer the script's timezone
-    /// to be the same as their choosen timezone.
-    Mirror,
-
-    /// Set custom script timezone and recalculate
-    /// any durations with this offset in mind.
-    ///
-    /// In seconds.
-    Custom(i32),
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -35,7 +19,7 @@ pub struct At {
 impl At {
     /// Converts combination of `hours` - `minutes` - `Am/Pm/None` to
     /// 24h format time in a form of `hours` - `minutes`.
-    fn convert24h(hours: u32, minutes: u32, part: &Part) -> (u32, u32) {
+    fn convert_24h(hours: u32, minutes: u32, part: &Part) -> (u32, u32) {
         let mut hours = hours;
 
         match part {
@@ -93,18 +77,13 @@ impl At {
                         .expect("could not parse {at minutes} in script");
                 }
                 Rule::Timezone => {
-                    script_timezone = ScriptTimezone::Custom(
-                        prop.as_str()
-                            .parse::<i32>()
-                            .expect("could not parse the timezone in script")
-                            * 3600,
-                    );
+                    script_timezone = ScriptTimezone::Custom(ScriptTimezoneParser::parse(prop));
                 }
                 _ => {}
             }
         }
 
-        let (hours, minutes) = Self::convert24h(hours, minutes, &part);
+        let (hours, minutes) = Self::convert_24h(hours, minutes, &part);
 
         Self {
             hours,
@@ -115,7 +94,7 @@ impl At {
 }
 
 #[cfg(test)]
-mod convert24h {
+mod convert_24h {
     use super::{At, Part};
 
     macro_rules! test {
@@ -128,7 +107,7 @@ mod convert24h {
             #[test]
             fn $name() {
                 pretty_assertions::assert_eq!(
-                    At::convert24h($actual_h, $actual_m, &Part::$part),
+                    At::convert_24h($actual_h, $actual_m, &Part::$part),
                     ($expected_h, $expected_m),
                 );
             }
