@@ -96,7 +96,7 @@ TimezoneLiteral = _{
 
 TimezoneLikeExpr = {
   TimezoneUTCLiteral
-  ~ (ASCII_DIGIT | "+" | ":")*
+  ~ (ASCII_DIGIT | "+" | "-" | ":")*
 }
 
 TimezoneExpr = {
