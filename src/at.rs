@@ -1,5 +1,6 @@
 use crate::parser::PestRule as Rule;
 use crate::script_timezone::{ScriptTimezone, ScriptTimezoneParser};
+use anyhow::Result;
 use pest::iterators::Pair;
 
 #[derive(Debug, PartialEq)]
@@ -54,7 +55,7 @@ impl At {
         (hours, minutes)
     }
 
-    pub fn parse(at_time_expr: Pair<Rule>) -> Self {
+    pub fn parse(at_time_expr: Pair<Rule>) -> Result<Self> {
         let mut hours = 0;
         let mut minutes = 0;
         let mut part = Part::None;
@@ -84,7 +85,8 @@ impl At {
                     }
                 }
                 Rule::TimezoneLikeExpr => {
-                    script_timezone = ScriptTimezone::Custom(ScriptTimezoneParser::parse(expr.as_str()));
+                    let tz = ScriptTimezoneParser::parse(expr.as_str())?;
+                    script_timezone = ScriptTimezone::Custom(tz);
                 }
                 _ => {}
             }
@@ -92,11 +94,11 @@ impl At {
 
         let (hours, minutes) = Self::convert_24h(hours, minutes, &part);
 
-        Self {
+        Ok(Self {
             hours,
             minutes,
             script_timezone,
-        }
+        })
     }
 }
 

@@ -22,6 +22,7 @@ license = "MIT"
 [dependencies]
 pest = "2.4"
 pest_derive = "2.4"
+anyhow = "1.0"
 
 [dependencies.chrono]
 version = "0.4"

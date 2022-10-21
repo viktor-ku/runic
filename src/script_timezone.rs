@@ -1,4 +1,5 @@
 use crate::parser::{PestRule as Rule, ScriptParser};
+use anyhow::Result;
 use pest::Parser;
 
 /// `ScriptTimezone` is not to be confused with
@@ -21,40 +22,33 @@ pub enum ScriptTimezone {
 pub struct ScriptTimezoneParser;
 
 impl ScriptTimezoneParser {
-    pub fn parse(timezonelike_expr: &str) -> i32 {
+    pub fn parse(timezonelike_expr: &str) -> Result<i32> {
         let mut power = 1;
         let mut hours = 0;
         let mut minutes = 0;
 
-        match ScriptParser::parse(Rule::TimezoneExpr, timezonelike_expr) {
-            Ok(pairs) => {
-                println!("{:#?}", pairs);
+        let pairs = ScriptParser::parse(Rule::TimezoneExpr, timezonelike_expr)?;
 
-                for expr in pairs {
-                    match expr.as_rule() {
-                        Rule::TimezoneExpr => {
-                            for prop in expr.into_inner() {
-                                match prop.as_rule() {
-                                    Rule::TimezoneNegative => power = -1,
-                                    Rule::TimezoneHours1 | Rule::TimezoneHours2 => {
-                                        hours = prop.as_str().parse().unwrap();
-                                    }
-                                    Rule::TimezoneMinutes => {
-                                        minutes = prop.as_str().parse().unwrap();
-                                    }
-                                    _ => {}
-                                }
+        for expr in pairs {
+            match expr.as_rule() {
+                Rule::TimezoneExpr => {
+                    for prop in expr.into_inner() {
+                        match prop.as_rule() {
+                            Rule::TimezoneNegative => power = -1,
+                            Rule::TimezoneHours1 | Rule::TimezoneHours2 => {
+                                hours = prop.as_str().parse().unwrap();
                             }
+                            Rule::TimezoneMinutes => {
+                                minutes = prop.as_str().parse().unwrap();
+                            }
+                            _ => {}
                         }
-                        _ => {}
                     }
                 }
-            }
-            Err(e) => {
-                panic!("{}", e)
+                _ => {}
             }
         }
 
-        power * ((hours * 3600) + (minutes * 60))
+        Ok(power * ((hours * 3600) + (minutes * 60)))
     }
 }
