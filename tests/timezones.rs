@@ -6,6 +6,15 @@ mod timezones {
     use super::*;
 
     test! {
+        name: just_utc,
+        now: time! {15:00 UTC_PLUS_3},
+        offset: UTC_PLUS_3,
+        variants: {
+            test => "at 13 utc" match duration!{01:00},
+        }
+    }
+
+    test! {
         name: utc_variants_of_the_same,
         now: time! {04:00 UTC_PLUS_3},
         offset: UTC_PLUS_3,

@@ -101,5 +101,5 @@ TimezoneLikeExpr = {
 
 TimezoneExpr = {
   TimezoneUTCLiteral
-  ~ (TimezoneSign ~ TimezoneLiteral)
+  ~ (TimezoneSign ~ TimezoneLiteral)?
 }
