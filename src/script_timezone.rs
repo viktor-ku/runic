@@ -1,5 +1,5 @@
-use crate::parser::PestRule as Rule;
-use pest::iterators::Pair;
+use crate::parser::{PestRule as Rule, ScriptParser};
+use pest::Parser;
 
 /// `ScriptTimezone` is not to be confused with
 /// current time state; it really is an offset defined
@@ -21,55 +21,37 @@ pub enum ScriptTimezone {
 pub struct ScriptTimezoneParser;
 
 impl ScriptTimezoneParser {
-    pub fn parse(expr: Pair<Rule>) -> i32 {
+    pub fn parse(timezonelike_expr: &str) -> i32 {
         let mut power = 1;
-        let mut hours: Option<i32> = None;
+        let mut hours = 0;
         let mut minutes = 0;
 
-        for timezone_kind in expr.into_inner() {
-            match timezone_kind.as_rule() {
-                Rule::TimezoneLiteral => {
-                    for prop in timezone_kind.into_inner() {
-                        match prop.as_rule() {
-                            Rule::TimezoneNegative => {
-                                power = -1;
+        match ScriptParser::parse(Rule::TimezoneExpr, timezonelike_expr) {
+            Ok(pairs) => {
+                println!("{:#?}", pairs);
+
+                for expr in pairs {
+                    match expr.as_rule() {
+                        Rule::TimezoneExpr => {
+                            for prop in expr.into_inner() {
+                                match prop.as_rule() {
+                                    Rule::TimezoneNegative => power = -1,
+                                    Rule::TimezoneHours1 | Rule::TimezoneHours2 => {
+                                        hours = prop.as_str().parse().unwrap();
+                                    }
+                                    _ => {}
+                                }
                             }
-                            Rule::TimezoneHours => {
-                                hours = Some(
-                                    prop.as_str()
-                                        .parse()
-                                        .expect("could not parse script timezone hours"),
-                                );
-                            }
-                            Rule::TimezoneHoursSimple => {
-                                hours = Some(
-                                    prop.as_str()
-                                        .parse()
-                                        .expect("could not parse script timezone hours"),
-                                );
-                            }
-                            Rule::TimezoneMinutes => {
-                                minutes = prop
-                                    .as_str()
-                                    .parse()
-                                    .expect("could not parse script timezone minutes");
-                            }
-                            _ => {}
                         }
+                        _ => {}
                     }
                 }
-                _ => {
-                    panic!(
-                        "does not makes sense to access non-timezone props in a timezone pattern"
-                    )
-                }
+            }
+            Err(e) => {
+                panic!("{}", e)
             }
         }
 
-        if let Some(hours) = hours {
-            power * ((hours * 3600) + (minutes * 60))
-        } else {
-            panic!("specifying hours part in the literal timezone is required")
-        }
+        power * ((hours * 3600) + (minutes * 60))
     }
 }

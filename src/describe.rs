@@ -1,6 +1,6 @@
 use crate::at::At;
 use crate::c::{DAY, HOUR_F64, MINUTE_F64};
-use crate::parser::{InputParser, PestRule as Rule};
+use crate::parser::{PestRule as Rule, ScriptParser};
 use crate::script_timezone::ScriptTimezone;
 use chrono::{FixedOffset, TimeZone, Timelike};
 use pest::{iterators::Pair, Parser};
@@ -21,11 +21,13 @@ impl Describe {
         let mut at: Option<Pair<Rule>> = None;
         let mut duration_total = 0;
 
-        match InputParser::parse(Rule::Input, script) {
+        match ScriptParser::parse(Rule::Input, script) {
             Ok(parsed) => {
+                println!("{:#?}", parsed);
+
                 for expr in parsed {
                     match expr.as_rule() {
-                        Rule::AtTime => {
+                        Rule::AtTimeExpr => {
                             at = Some(expr);
                         }
                         Rule::DurationExpr => {
@@ -35,7 +37,9 @@ impl Describe {
                     }
                 }
             }
-            Err(_) => return Err(()),
+            Err(e) => {
+                panic!("{}", e)
+            },
         };
 
         let at_total = match at {

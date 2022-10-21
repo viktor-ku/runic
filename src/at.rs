@@ -54,30 +54,37 @@ impl At {
         (hours, minutes)
     }
 
-    pub fn parse(expr: Pair<Rule>) -> Self {
+    pub fn parse(at_time_expr: Pair<Rule>) -> Self {
         let mut hours = 0;
         let mut minutes = 0;
         let mut part = Part::None;
         let mut script_timezone = ScriptTimezone::Mirror;
 
-        for prop in expr.into_inner() {
-            match prop.as_rule() {
-                Rule::Pm => part = Part::Pm,
-                Rule::Am => part = Part::Am,
-                Rule::AtHours => {
-                    hours = prop
-                        .as_str()
-                        .parse()
-                        .expect("could not parse {at hours} in script");
+        for expr in at_time_expr.into_inner() {
+            match expr.as_rule() {
+                Rule::AtTime => {
+                    for prop in expr.into_inner() {
+                        match prop.as_rule() {
+                            Rule::Pm => part = Part::Pm,
+                            Rule::Am => part = Part::Am,
+                            Rule::AtHours => {
+                                hours = prop
+                                    .as_str()
+                                    .parse()
+                                    .expect("could not parse {at hours} in script");
+                            }
+                            Rule::AtMinutes => {
+                                minutes = prop
+                                    .as_str()
+                                    .parse()
+                                    .expect("could not parse {at minutes} in script");
+                            }
+                            _ => {}
+                        }
+                    }
                 }
-                Rule::AtMinutes => {
-                    minutes = prop
-                        .as_str()
-                        .parse()
-                        .expect("could not parse {at minutes} in script");
-                }
-                Rule::Timezone => {
-                    script_timezone = ScriptTimezone::Custom(ScriptTimezoneParser::parse(prop));
+                Rule::TimezoneLikeExpr => {
+                    script_timezone = ScriptTimezone::Custom(ScriptTimezoneParser::parse(expr.as_str()));
                 }
                 _ => {}
             }

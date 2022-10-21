@@ -3,13 +3,13 @@
 
 Input = _{ SOI ~ Expr* ~ EOI }
 
-Word = _{
+WordExpr = _{
   ASCII_ALPHA+
 }
 
 Expr = _{
   WHITE_SPACE*
-  ~ (AtTimeExpr | Word | DurationExpr)
+  ~ (AtTimeExpr | WordExpr | DurationExpr)
   ~ WHITE_SPACE*
 }
 
@@ -69,44 +69,37 @@ Am = { "AM" | "am" }
 AtTime = {
   TimeValue
   ~ (WHITE_SPACE* ~ (Am | Pm))?
-  ~ (WHITE_SPACE* ~ Timezone)?
 }
 
-AtTimeExpr = _{
+AtTimeExpr = {
   "at"
   ~ WHITE_SPACE+
   ~ AtTime
+  ~ (WHITE_SPACE+ ~ TimezoneLikeExpr)?
 }
 
 // Timezone
 // ...
 
-TimezoneHoursSimple = {
-  ASCII_DIGIT{1,2}
-}
-
-TimezoneHours = {
-  ASCII_DIGIT{2}
-}
-
-TimezoneMinutes = {
-  ASCII_DIGIT{2}
-}
-
 TimezonePositive = { "+" }
 TimezoneNegative = { "-" }
+TimezoneSign = _{ TimezonePositive | TimezoneNegative }
+TimezoneUTCLiteral = _{ ^"utc" }
 
-TimezoneLiteral = {
-  ("UTC" | "utc" | "Utc")?
-
-  ~ (TimezonePositive | TimezoneNegative)
-
-  ~ (
-    (TimezoneHoursSimple ~ (":" ~ TimezoneMinutes)?)
-    | (TimezoneHours ~ TimezoneMinutes)
-  )
+TimezoneHours1 = { ASCII_DIGIT{1} }
+TimezoneHours2 = { ASCII_DIGIT{2} }
+TimezoneMinutes = { ASCII_DIGIT{2} }
+TimezoneLiteral = _{
+  (TimezoneHours1 ~ !ASCII_DIGIT)
+  | TimezoneHours2 ~ ":"? ~ TimezoneMinutes
 }
 
-Timezone = {
-  TimezoneLiteral
+TimezoneLikeExpr = {
+  TimezoneUTCLiteral
+  ~ (ASCII_DIGIT | "+" | ":")*
+}
+
+TimezoneExpr = {
+  TimezoneUTCLiteral
+  ~ (TimezoneSign ~ TimezoneLiteral)
 }
