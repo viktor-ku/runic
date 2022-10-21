@@ -12,5 +12,4 @@ pub use hms_mod::hms;
 mod runic;
 pub use crate::runic::Runic;
 
-mod open_runic;
-pub use open_runic::OpenRunic;
+mod script_timezone;

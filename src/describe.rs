@@ -1,9 +1,10 @@
 use crate::at::At;
 use crate::c::{DAY, HOUR_F64, MINUTE_F64};
-use crate::parser::{InputParser, PestRule as Rule};
+use crate::parser::{PestRule as Rule, ScriptParser};
+use crate::script_timezone::ScriptTimezone;
+use anyhow::Result;
 use chrono::{FixedOffset, TimeZone, Timelike};
 use pest::{iterators::Pair, Parser};
-use std::result::Result;
 
 pub struct Describe {
     utc: i64,
@@ -11,36 +12,28 @@ pub struct Describe {
 }
 
 impl Describe {
-    pub fn with(input: &str, timestamp: i64, offset: i32) -> Result<u64, ()> {
+    pub fn with(script: &str, timestamp: i64, offset: i32) -> Result<u64> {
         let cx = Self {
             utc: timestamp,
             offset,
         };
 
-        let mut at: Option<Pair<Rule>> = None;
         let mut duration_total = 0;
+        let mut at_total = 0;
+        let parsed = ScriptParser::parse(Rule::Input, script)?;
 
-        match InputParser::parse(Rule::Input, input) {
-            Ok(parsed) => {
-                for expr in parsed {
-                    match expr.as_rule() {
-                        Rule::AtTime => {
-                            at = Some(expr);
-                        }
-                        Rule::DurationExpr => {
-                            duration_total += Self::duration_expr(expr);
-                        }
-                        _ => {}
-                    }
+        for expr in parsed {
+            match expr.as_rule() {
+                Rule::AtTimeExpr => {
+                    let at = At::parse(expr)?;
+                    at_total += cx.compute_duration_from_target_expr(at);
                 }
+                Rule::DurationExpr => {
+                    duration_total += Self::compute_duration_from_timeout_expr(expr);
+                }
+                _ => {}
             }
-            Err(_) => return Err(()),
-        };
-
-        let at_total = match at {
-            Some(at) => cx.duration_until(&At::parse(at)),
-            None => 0,
-        };
+        }
 
         let total = {
             let total = at_total + duration_total;
@@ -55,27 +48,32 @@ impl Describe {
         Ok(total as _)
     }
 
-    fn duration_until(&self, at: &At) -> i64 {
-        let at = {
-            let offset = FixedOffset::east(self.offset);
-            let dt = offset.timestamp(self.utc, 0);
-            let dt = dt.with_hour(at.0).unwrap();
-            let dt = dt.with_minute(at.1).unwrap();
-            let dt = dt.with_second(0).unwrap();
-            let dt = dt.with_nanosecond(0).unwrap();
-            dt.timestamp()
+    fn compute_duration_from_target_expr(&self, at: At) -> i64 {
+        let target = {
+            let offset = match at.script_timezone {
+                ScriptTimezone::Mirror => FixedOffset::east(self.offset),
+                ScriptTimezone::Custom(script_offset) => FixedOffset::east(script_offset),
+            };
+
+            let target = offset.timestamp(self.utc, 0);
+            let target = target.with_hour(at.hours).unwrap();
+            let target = target.with_minute(at.minutes).unwrap();
+            let target = target.with_second(0).unwrap();
+            let target = target.with_nanosecond(0).unwrap();
+
+            target.timestamp()
         };
 
-        let diff = at - self.utc;
+        let duration = target - self.utc;
 
-        if diff.is_negative() {
-            DAY + diff
+        if duration.is_negative() {
+            DAY + duration
         } else {
-            diff
+            duration
         }
     }
 
-    fn duration_expr(expr: Pair<Rule>) -> i64 {
+    fn compute_duration_from_timeout_expr(expr: Pair<Rule>) -> i64 {
         let mut needle: f64 = 0.0;
 
         for prop in expr.into_inner() {

@@ -4,13 +4,9 @@
 
 ## General usage
 
-Two mods are available: using 
-[timeout](#timeout) _and_/_or_ using [exact time](#exact-time). 
-It's not either-or, feel free to mix everything, even multiple 
-times during the same command.
+Two mods are available: using [timeout](#timeout) _and_/_or_ using [exact time](#exact-time). 
 
-Order of timeouts, exact times and custom text is not important at all, 
-you are free to specify the timer however you want to!
+Order of things does not matter, feel free to mix everything however you want.
 
 Quick example for the _timeout_:
 
@@ -30,7 +26,8 @@ specified _exact time_.
 #### To Message, Or not to Message
  
 The following timers are exactly the same, all three of them will return
-the same duration back.
+the same duration back, the only difference is that the last one has some text
+for the user.
 
 ```bash
 "4 minutes"
@@ -165,9 +162,10 @@ Or, possibly the shortest way to describe 30 minutes is:
 
 ## Exact Time
 
-Used to specify some time of interest explicitly. Under the hood it 
-calculates the duration between the local _now_ and local time and 
-launches an ordinary timeout:
+The word _`at`_ is a keyword. It marks the beginning of the _exact time_
+expression and is used to specify some time of interest explicitly. 
+Under the hood it calculates the duration between the local _now_ 
+and the target time:
 
 ```bash
 "should finish at 19:30"
@@ -190,6 +188,70 @@ the following timers are equal:
 "at 22:00"
 "at 10pm"
 "at 10:00 pm"
+```
+
+### Using other timezones to compare
+
+The word _`utc`_ (case insensitive) is a keyword. It's used at 
+the end of _exact time_ expressions to point that the _time I 
+am targeting is actually in a different timezone than me_.
+
+Giving the following example - _10 am UTC_, programm will 
+figure out whatever it means for your current local time and 
+calcualte an appropriate timeout for the action.
+
+```bash
+"at 10am UTC"
+```
+
+You have four variants how to specify `utc` keyword:
+
+#### Just utc
+
+Using just `utc` is an alias for `utc+0` (or `utc-0` for that matter).
+
+The following examples are all the same:
+
+```bash
+"at 10am utc"
+"at 10am utc+0"
+"at 10am utc-0"
+```
+
+#### Short variant
+
+Short variant is when you only want to specify a target hour.
+
+```bash
+"at 10am utc+1"
+"at 10am utc-3"
+"at 10am utc+10"
+"at 10am utc-11"
+```
+
+#### Long variants
+
+Specify an hour, following by the _optional_ colon, following by the minutes.
+
+Note that you have to use _two_ digits for the hours and _two_
+digits for the minutes always in the long variants.
+
+Examples with the colon:
+
+```bash
+"at 10am utc+01:00"
+"at 10am utc+11:30"
+"at 10am utc-03:30"
+"at 10am utc-00:45"
+```
+
+Examples without the colon (just 4 digits):
+
+```bash
+"at 10am utc+0100"
+"at 10am utc+1130"
+"at 10am utc-0330"
+"at 10am utc-0045"
 ```
 
 ### Where a day starts and ends?

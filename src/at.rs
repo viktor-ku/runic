@@ -1,4 +1,6 @@
 use crate::parser::PestRule as Rule;
+use crate::script_timezone::{ScriptTimezone, ScriptTimezoneParser};
+use anyhow::Result;
 use pest::iterators::Pair;
 
 #[derive(Debug, PartialEq)]
@@ -8,14 +10,17 @@ pub enum Part {
     Am,
 }
 
-/// `At` represents an _hours_ and _minutes_ pair
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct At(pub u32, pub u32);
+pub struct At {
+    pub hours: u32,
+    pub minutes: u32,
+    pub script_timezone: ScriptTimezone,
+}
 
 impl At {
     /// Converts combination of `hours` - `minutes` - `Am/Pm/None` to
     /// 24h format time in a form of `hours` - `minutes`.
-    fn format(hours: u32, minutes: u32, part: &Part) -> Self {
+    fn convert_24h(hours: u32, minutes: u32, part: &Part) -> (u32, u32) {
         let mut hours = hours;
 
         match part {
@@ -47,34 +52,58 @@ impl At {
             hours = 0;
         }
 
-        Self(hours, minutes)
+        (hours, minutes)
     }
 
-    pub fn parse(expr: Pair<Rule>) -> Self {
+    pub fn parse(at_time_expr: Pair<Rule>) -> Result<Self> {
         let mut hours = 0;
         let mut minutes = 0;
         let mut part = Part::None;
+        let mut script_timezone = ScriptTimezone::Mirror;
 
-        for prop in expr.into_inner() {
-            match prop.as_rule() {
-                Rule::Pm => part = Part::Pm,
-                Rule::Am => part = Part::Am,
-                Rule::AtHours => {
-                    hours = prop.as_str().parse().unwrap();
+        for expr in at_time_expr.into_inner() {
+            match expr.as_rule() {
+                Rule::AtTime => {
+                    for prop in expr.into_inner() {
+                        match prop.as_rule() {
+                            Rule::Pm => part = Part::Pm,
+                            Rule::Am => part = Part::Am,
+                            Rule::AtHours => {
+                                hours = prop
+                                    .as_str()
+                                    .parse()
+                                    .expect("could not parse {at hours} in script");
+                            }
+                            Rule::AtMinutes => {
+                                minutes = prop
+                                    .as_str()
+                                    .parse()
+                                    .expect("could not parse {at minutes} in script");
+                            }
+                            _ => {}
+                        }
+                    }
                 }
-                Rule::AtMinutes => {
-                    minutes = prop.as_str().parse().unwrap();
+                Rule::TimezoneLikeExpr => {
+                    let tz = ScriptTimezoneParser::parse(expr.as_str())?;
+                    script_timezone = ScriptTimezone::Custom(tz);
                 }
                 _ => {}
             }
         }
 
-        Self::format(hours, minutes, &part)
+        let (hours, minutes) = Self::convert_24h(hours, minutes, &part);
+
+        Ok(Self {
+            hours,
+            minutes,
+            script_timezone,
+        })
     }
 }
 
 #[cfg(test)]
-mod format {
+mod convert_24h {
     use super::{At, Part};
 
     macro_rules! test {
@@ -87,8 +116,8 @@ mod format {
             #[test]
             fn $name() {
                 pretty_assertions::assert_eq!(
-                    At::format($actual_h, $actual_m, &Part::$part),
-                    At($expected_h, $expected_m),
+                    At::convert_24h($actual_h, $actual_m, &Part::$part),
+                    ($expected_h, $expected_m),
                 );
             }
         };
@@ -108,7 +137,6 @@ mod format {
 
         mod am {
             use super::*;
-            use pretty_assertions::assert_eq;
 
             test! { _00_00 => 00:00 Am match 00:00 }
             test! { _01_15 => 01:15 Am match 01:15 }
@@ -127,7 +155,6 @@ mod format {
 
         mod pm {
             use super::*;
-            use pretty_assertions::assert_eq;
 
             test! { _00_00 => 00:00 Pm match 12:00 }
             test! { _01_15 => 01:15 Pm match 13:15 }
@@ -152,7 +179,6 @@ mod format {
 
             mod am {
                 use super::*;
-                use pretty_assertions::assert_eq;
 
                 test! { _13_00 => 13:00 Am match 13:00 }
                 test! { _14_15 => 14:15 Am match 14:15 }
@@ -170,7 +196,6 @@ mod format {
 
             mod pm {
                 use super::*;
-                use pretty_assertions::assert_eq;
 
                 test! { _13_00 => 13:00 Pm match 13:00 }
                 test! { _14_15 => 14:15 Pm match 14:15 }
@@ -190,7 +215,6 @@ mod format {
 
     mod h24 {
         use super::*;
-        use pretty_assertions::assert_eq;
 
         test! { _00_00 => 00:00 match 00:00 }
         test! { _01_15 => 01:15 match 01:15 }
