@@ -86,12 +86,12 @@ TimezoneNegative = { "-" }
 TimezoneSign = _{ TimezonePositive | TimezoneNegative }
 TimezoneUTCLiteral = _{ ^"utc" }
 
-TimezoneHours1 = { ASCII_DIGIT{1} }
+TimezoneHours = { ASCII_DIGIT{1,2} }
 TimezoneHours2 = { ASCII_DIGIT{2} }
 TimezoneMinutes = { ASCII_DIGIT{2} }
 TimezoneLiteral = _{
-  (TimezoneHours1 ~ !ASCII_DIGIT)
-  | TimezoneHours2 ~ ":"? ~ TimezoneMinutes
+  (!"0" ~ TimezoneHours ~ !":")
+  | (TimezoneHours2 ~ ":"? ~ TimezoneMinutes)
 }
 
 TimezoneLikeExpr = {

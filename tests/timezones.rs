@@ -30,9 +30,9 @@ mod timezones {
         now: time! {04:00 UTC_PLUS_3},
         offset: UTC_PLUS_3,
         variants: {
-            t_01 => "at 10am utc+5" match duration!{04:00},
-            t_02 => "at 10am UTC+5" match duration!{04:00},
-            t_03 => "at 10am Utc+5" match duration!{04:00},
+            t_01 => "at 12 utc+10" match duration!{01:00},
+            t_02 => "at 12 UTC+10" match duration!{01:00},
+            t_03 => "at 12 Utc+10" match duration!{01:00},
         }
     }
 

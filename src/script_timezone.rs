@@ -35,7 +35,7 @@ impl ScriptTimezoneParser {
                     for prop in expr.into_inner() {
                         match prop.as_rule() {
                             Rule::TimezoneNegative => power = -1,
-                            Rule::TimezoneHours1 | Rule::TimezoneHours2 => {
+                            Rule::TimezoneHours | Rule::TimezoneHours2 => {
                                 hours = prop.as_str().parse().unwrap();
                             }
                             Rule::TimezoneMinutes => {
