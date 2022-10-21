@@ -17,6 +17,17 @@ mod timezones {
     }
 
     test! {
+        name: utc_case_insensitive,
+        now: time! {04:00 UTC_PLUS_3},
+        offset: UTC_PLUS_3,
+        variants: {
+            t_01 => "at 10am utc+5" match duration!{04:00},
+            t_02 => "at 10am UTC+5" match duration!{04:00},
+            t_03 => "at 10am Utc+5" match duration!{04:00},
+        }
+    }
+
+    test! {
         name: minus_sign,
         now: time! {15:00 UTC_PLUS_3},
         offset: UTC_PLUS_3,
