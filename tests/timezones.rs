@@ -33,4 +33,32 @@ mod timezones {
             at_10am_utc_m_3 => "at 8pm utc-0330" match duration!{11:30},
         }
     }
+
+    test! {
+        name: with_text,
+        now: time! {12:00 UTC_PLUS_3},
+        offset: UTC_PLUS_3,
+        variants: {
+            before => "should start at 3pm utc+01:50" match duration!{04:10},
+            after => "at 3pm utc+01:50 is when it starts" match duration!{04:10},
+        }
+    }
+
+    test! {
+        name: with_duration,
+        now: time! {12:00 UTC_PLUS_3},
+        offset: UTC_PLUS_3,
+        variants: {
+            p10 => "at 3pm utc+01:50 10m" match duration!{04:20},
+        }
+    }
+
+    test! {
+        name: with_duration_and_text,
+        now: time! {12:00 UTC_PLUS_3},
+        offset: UTC_PLUS_3,
+        variants: {
+            t01 => "should start at 3pm utc+01:50 and I give myself additional 10m to prepare" match duration!{04:20},
+        }
+    }
 }
