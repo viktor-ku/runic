@@ -24,4 +24,13 @@ mod timezones {
             at_10am_utc_m_3 => "at 8pm utc-3" match duration!{11:00},
         }
     }
+
+    test! {
+        name: with_minutes,
+        now: time! {15:00 UTC_PLUS_3},
+        offset: UTC_PLUS_3,
+        variants: {
+            at_10am_utc_m_3 => "at 8pm utc-0330" match duration!{11:30},
+        }
+    }
 }

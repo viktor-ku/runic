@@ -39,6 +39,9 @@ impl ScriptTimezoneParser {
                                     Rule::TimezoneHours1 | Rule::TimezoneHours2 => {
                                         hours = prop.as_str().parse().unwrap();
                                     }
+                                    Rule::TimezoneMinutes => {
+                                        minutes = prop.as_str().parse().unwrap();
+                                    }
                                     _ => {}
                                 }
                             }
