@@ -135,7 +135,6 @@ mod convert_24h {
 
         mod am {
             use super::*;
-            use pretty_assertions::assert_eq;
 
             test! { _00_00 => 00:00 Am match 00:00 }
             test! { _01_15 => 01:15 Am match 01:15 }
@@ -154,7 +153,6 @@ mod convert_24h {
 
         mod pm {
             use super::*;
-            use pretty_assertions::assert_eq;
 
             test! { _00_00 => 00:00 Pm match 12:00 }
             test! { _01_15 => 01:15 Pm match 13:15 }
@@ -179,7 +177,6 @@ mod convert_24h {
 
             mod am {
                 use super::*;
-                use pretty_assertions::assert_eq;
 
                 test! { _13_00 => 13:00 Am match 13:00 }
                 test! { _14_15 => 14:15 Am match 14:15 }
@@ -197,7 +194,6 @@ mod convert_24h {
 
             mod pm {
                 use super::*;
-                use pretty_assertions::assert_eq;
 
                 test! { _13_00 => 13:00 Pm match 13:00 }
                 test! { _14_15 => 14:15 Pm match 14:15 }
@@ -217,7 +213,6 @@ mod convert_24h {
 
     mod h24 {
         use super::*;
-        use pretty_assertions::assert_eq;
 
         test! { _00_00 => 00:00 match 00:00 }
         test! { _01_15 => 01:15 match 01:15 }
